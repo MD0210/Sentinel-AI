@@ -47,29 +47,38 @@ Sentinel AI should use layered security rather than trusting voice recognition a
 
 ## High-Level Architecture
 
+The architecture is intentionally written with simple Mermaid syntax for GitHub's renderer.
+
 ```mermaid
 flowchart TD
-    U[User Voice] --> W[Wake Word: "Hey Sentinel"]
-    W --> V[Voice Verification]
-    V -->|Verified| S[Authenticated Session]
-    V -->|Failed| Q1[Security Question 1]
-    Q1 -->|Correct| Q2[Security Question 2]
-    Q1 -->|Incorrect| L[Lockout / Cooldown]
-    Q2 -->|Correct| S
-    Q2 -->|Incorrect| L
-    S --> STT[Speech-to-Text]
-    STT --> A[AI Agent / Orchestrator]
-    A --> G[GitHub]
-    A --> C[VS Code]
-    A --> T[Controlled Windows Terminal]
-    A --> F[Local Filesystem]
-    G --> R[Result]
-    C --> R
-    T --> R
-    F --> R
-    R --> A
-    A --> O[Text / Text-to-Speech]
+    user[User Voice] --> wake[Wake Word]
+    wake --> verify[Voice Verification]
+    verify -->|Verified| session[Authenticated Session]
+    verify -->|Failed| q1[Security Question 1]
+    q1 -->|Correct| q2[Security Question 2]
+    q1 -->|Incorrect| lock[Lockout]
+    q2 -->|Correct| session
+    q2 -->|Incorrect| lock
+
+    session --> stt[Speech to Text]
+    stt --> agent[AI Agent]
+    agent --> github[GitHub]
+    agent --> vscode[VS Code]
+    agent --> terminal[Windows Terminal]
+    agent --> files[Local Filesystem]
+
+    github --> result[Tool Result]
+    vscode --> result
+    terminal --> result
+    files --> result
+
+    result --> agent
+    agent --> response[Text or Text to Speech]
 ```
+
+### Architecture Flow
+
+**Voice input → Wake word → Voice verification → Security fallback if needed → Authenticated session → Speech-to-text → AI agent → Controlled tools → Result → Response.**
 
 ## Development Approach
 
