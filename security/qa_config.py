@@ -6,6 +6,7 @@ the existing TwoQuestionFallback, which stores only salted PBKDF2 hashes.
 
 import os
 
+from security.env_loader import load_dotenv
 from security.two_question import Question, TwoQuestionFallback
 
 
@@ -13,7 +14,11 @@ QUESTION_ONE = "What are the names of my dogs?"
 QUESTION_TWO = "What is my catchphrase?"
 
 
-def create_fallback_from_environment() -> TwoQuestionFallback:
+def create_fallback_from_environment(
+    env_path: str = ".env",
+) -> TwoQuestionFallback:
+    load_dotenv(env_path)
+
     answer_one = os.getenv("SENTINEL_QA_ANSWER_1")
     answer_two = os.getenv("SENTINEL_QA_ANSWER_2")
 
