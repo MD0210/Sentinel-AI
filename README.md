@@ -165,4 +165,4 @@ GitHub: https://github.com/MD0210/Sentinel-AI
 
 ## Status
 
-Early development. The local authentication foundation, multiple transcript wake phrases, wake-word adapter, environment setup, and security workflow are implemented. Microphone-based wake-word detection is available through the voice adapter; real speaker biometric verification and the broader AI/tool integrations remain future work.
+Early development. The local authentication foundation, multiple transcript wake phrases, microphone input adapter, wake-word adapter, environment setup, and security workflow are implemented. A local microphone smoke-test script is included for the available openWakeWord acoustic model. The four Sentinel transcript phrases remain supported; real acoustic models for those exact phrases and speaker biometric verification remain future work.
