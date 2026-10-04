@@ -247,7 +247,7 @@ REM STEP 6 - VERIFY ENVIRONMENT
 REM ============================================================
 
 echo.
-echo [6/6] Verifying installation...
+echo [7/7] Verifying installation...
 echo.
 
 echo Python version:
