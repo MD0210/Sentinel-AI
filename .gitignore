@@ -222,3 +222,6 @@ __marimo__/
 
 # Local offline wheel cache
 wheel/*.whl
+
+# Local biometric profile -- never commit speaker embeddings
+config/voice_profile.json
