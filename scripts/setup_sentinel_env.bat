@@ -1,7 +1,8 @@
 @echo off
 REM Sentinel AI - Complete environment setup
-REM Checks Python, checks/downloads required wheels,
-REM recreates .venv, installs from local wheels, downloads wake-word models, and verifies installation.
+REM Checks Python, downloads required wheels, recreates .venv,
+REM installs packages, downloads the openWakeWord model,
+REM and verifies the environment.
 
 setlocal EnableExtensions EnableDelayedExpansion
 
@@ -58,14 +59,13 @@ if errorlevel 1 (
     echo.
 )
 
-REM Check Python again
 where python >nul 2>&1
 
 if errorlevel 1 (
     echo.
     echo ERROR: Python is installed but is not available in PATH.
     echo.
-    echo Please close this window, open a new Command Prompt,
+    echo Close this window, open a new Command Prompt,
     echo and run this script again.
     echo.
     pause
@@ -105,7 +105,7 @@ echo Found:
 echo     requirements-voice.txt
 
 REM ============================================================
-REM STEP 3 - CHECK WHEELHOUSE
+REM STEP 3 - CHECK / DOWNLOAD WHEELS
 REM ============================================================
 
 echo.
@@ -118,20 +118,15 @@ if not exist "wheel" (
 
     if errorlevel 1 (
         echo ERROR: Could not create wheel directory.
+        echo.
         pause
         exit /b 1
     )
 )
 
 echo.
-echo Checking whether required packages have local wheels...
+echo Downloading required Python wheels...
 echo.
-
-REM ------------------------------------------------------------
-REM We use pip download to resolve the requirements.
-REM Existing wheels are reused when compatible wheels already
-REM exist in the wheel directory.
-REM ------------------------------------------------------------
 
 python -m pip download ^
     --only-binary=:all: ^
@@ -218,7 +213,7 @@ echo Installation source:
 echo     %CD%\wheel
 echo.
 
-echo PyPI access is disabled for this installation.
+echo PyPI access is disabled for package installation.
 echo.
 
 ".venv\Scripts\python.exe" -m pip install ^
@@ -243,7 +238,68 @@ if errorlevel 1 (
 )
 
 REM ============================================================
-REM STEP 6 - VERIFY ENVIRONMENT
+REM STEP 6 - DOWNLOAD OPENWAKEWORD MODEL
+REM ============================================================
+
+echo.
+echo [6/7] Downloading openWakeWord model...
+echo.
+
+echo Required acoustic model:
+echo     hey_jarvis_v0.1
+echo.
+
+echo Downloading model files...
+echo.
+
+".venv\Scripts\python.exe" -c "import openwakeword.utils as u; u.download_models(['hey_jarvis_v0.1'])"
+
+if errorlevel 1 (
+    echo.
+    echo ==========================================
+    echo ERROR: Wake-word model download failed.
+    echo ==========================================
+    echo.
+    echo Check your internet connection and try again.
+    echo.
+    pause
+    exit /b 1
+)
+
+echo.
+echo Wake-word model download command completed.
+
+REM ============================================================
+REM VERIFY MODEL FILE
+REM ============================================================
+
+echo.
+echo Verifying wake-word model file...
+echo.
+
+".venv\Scripts\python.exe" -c "from pathlib import Path; import openwakeword; p=Path(openwakeword.__file__).parent/'resources'/'models'/'hey_jarvis_v0.1.onnx'; print('Model:', p); print('Exists:', p.exists()); raise SystemExit(0 if p.exists() else 1)"
+
+if errorlevel 1 (
+    echo.
+    echo ==========================================
+    echo ERROR: Wake-word model file was not found.
+    echo ==========================================
+    echo.
+    echo Expected:
+    echo     .venv\Lib\site-packages\openwakeword\resources\models\hey_jarvis_v0.1.onnx
+    echo.
+    echo The download did not place the model where
+    echo openWakeWord expects it.
+    echo.
+    pause
+    exit /b 1
+)
+
+echo.
+echo Wake-word model verified successfully.
+
+REM ============================================================
+REM STEP 7 - VERIFY ENVIRONMENT
 REM ============================================================
 
 echo.
@@ -292,7 +348,7 @@ echo Requirements:
 echo     requirements-voice.txt
 echo.
 echo Wake-word model:
-echo     hey_jarvis
+echo     hey_jarvis_v0.1
 echo.
 echo To activate the environment:
 echo     .venv\Scripts\Activate.ps1
