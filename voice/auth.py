@@ -50,9 +50,13 @@ class SpeakerVerifier:
     enrolled_embedding: tuple[float, ...]
     threshold: float = 0.75
 
-    def verify(self, audio: bytes) -> bool:
+    def similarity(self, audio: bytes) -> float:
+        """Return cosine similarity for a verification sample."""
         embedding = tuple(float(value) for value in self.model.embed(audio))
-        return cosine_similarity(embedding, self.enrolled_embedding) >= self.threshold
+        return cosine_similarity(embedding, self.enrolled_embedding)
+
+    def verify(self, audio: bytes) -> bool:
+        return self.similarity(audio) >= self.threshold
 
 
 class SpeakerEnrollment:
