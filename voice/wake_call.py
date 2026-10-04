@@ -108,7 +108,7 @@ def create_openwakeword_detector(
     """Create a detector using the openWakeWord model package."""
     from openwakeword.model import Model
 
-    model = Model(inference_framework="onnx")
+    model = Model(wakeword_models=[wakeword], inference_framework="onnx")
     return OpenWakeWordDetector(model, wakeword=wakeword, threshold=threshold)
 
 
