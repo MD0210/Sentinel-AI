@@ -1,5 +1,7 @@
 """Sentinel AI agent controller with security and voice-layer integration."""
 
+from getpass import getpass
+
 from security.auth import SecurityManager
 from security.policy import AuthorizationPolicy, Role
 from security.qa_config import create_fallback_from_environment
@@ -60,10 +62,15 @@ class SentinelAgent:
         return verified
 
     def authenticate_fallback_from_environment(
-        self, answers: tuple[str, str]
+        self, answers: tuple[str, str] | None = None
     ) -> bool:
-        """Authenticate using the locally configured Q&A fallback."""
+        """Authenticate with local Q&A, prompting securely when answers are omitted."""
         fallback = create_fallback_from_environment()
+        if answers is None:
+            answers = (
+                getpass(f"{fallback.questions[0].prompt} "),
+                getpass(f"{fallback.questions[1].prompt} "),
+            )
         return self.authenticate_fallback(answers, fallback)
 
     def check_wake_call(self, text: str) -> bool:
