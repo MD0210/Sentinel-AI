@@ -49,7 +49,7 @@ def main() -> None:
             samples.append(record_sample(audio, SECONDS_PER_SAMPLE))
         finally:
             audio.close()
-        print("Sample captured.\\n")
+        print("Sample captured.\n")
 
     profile = enrollment.enroll(samples)
     save_voice_profile(PROFILE_PATH, profile)
