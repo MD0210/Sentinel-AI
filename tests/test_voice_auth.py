@@ -23,6 +23,11 @@ class VoiceAuthenticatorTests(unittest.TestCase):
         verifier = SpeakerVerifier(FakeEmbeddingModel(), (1.0, 0.0), threshold=0.75)
         self.assertTrue(verifier.verify(b"same"))
 
+    def test_similarity_reports_score(self):
+        verifier = SpeakerVerifier(FakeEmbeddingModel(), (1.0, 0.0), threshold=0.75)
+        self.assertAlmostEqual(verifier.similarity(b"same"), 1.0)
+        self.assertAlmostEqual(verifier.similarity(b"other"), 0.0)
+
     def test_verifier_rejects_different_speaker(self):
         verifier = SpeakerVerifier(FakeEmbeddingModel(), (1.0, 0.0), threshold=0.75)
         self.assertFalse(verifier.verify(b"other"))
