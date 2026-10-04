@@ -8,6 +8,25 @@ available for tests and environments without audio dependencies.
 from typing import Protocol
 
 
+from dataclasses import dataclass
+
+
+@dataclass
+class WakeCall:
+    """Transcript-based wake phrase detector retained for compatibility."""
+
+    phrase: str = "hey sentinel"
+
+    def matches(self, text: str) -> bool:
+        """Return True when normalized text exactly matches the wake phrase."""
+        normalized = " ".join(text.casefold().strip().split())
+        return normalized == self.phrase.casefold()
+
+    def activate(self, text: str) -> bool:
+        """Check a transcript and report whether Sentinel should activate."""
+        return self.matches(text)
+
+
 class AudioSource(Protocol):
     def read(self, frame_size: int) -> bytes:
         """Return one frame of 16-bit mono PCM audio."""
