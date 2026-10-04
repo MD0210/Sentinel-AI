@@ -70,10 +70,13 @@ class EcapaTdnnSpeakerModel:
     ):
         from speechbrain.inference.speaker import EncoderClassifier
 
+        from speechbrain.utils.fetching import LocalStrategy
+
         self._classifier = EncoderClassifier.from_hparams(
             source=source,
             savedir=savedir,
             run_opts={"device": "cpu"},
+            local_strategy=LocalStrategy.COPY,
         )
 
     def embed(self, audio: bytes) -> tuple[float, ...]:

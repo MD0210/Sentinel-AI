@@ -1,4 +1,5 @@
 import unittest
+from pathlib import Path
 
 from voice.auth import SpeakerEnrollment, SpeakerVerifier, VoiceAuthenticator, cosine_similarity
 from voice.enrollment import VoiceEnrollment, average_embeddings
@@ -65,4 +66,11 @@ class EcapaAdapterTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             EcapaTdnnSpeakerModel.__new__(EcapaTdnnSpeakerModel).embed(b"")
 
+
+
+
+class LocalStrategyConfigurationTests(unittest.TestCase):
+    def test_ecapa_source_uses_windows_safe_copy_strategy(self):
+        source = Path("voice/auth.py").read_text(encoding="utf-8")
+        self.assertIn("LocalStrategy.COPY", source)
 
