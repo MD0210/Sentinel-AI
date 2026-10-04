@@ -1,14 +1,11 @@
-"""Microphone-backed wake-call adapter using openWakeWord.
+"""Microphone-backed wake-call adapters using openWakeWord.
 
-The adapter keeps audio capture outside the agent and reports only wake-word
-activation. It is optional so the existing transcript implementation remains
-available for tests and environments without audio dependencies.
+The audio source is intentionally kept separate from wake-word detection so the
+detector remains easy to test without microphone hardware.
 """
 
-from typing import Protocol
-
-
 from dataclasses import dataclass
+from typing import Protocol
 
 
 @dataclass
@@ -22,7 +19,10 @@ class WakeCall:
     def matches(self, text: str) -> bool:
         """Return True when normalized text exactly matches an accepted wake phrase."""
         normalized = " ".join(text.casefold().strip().split())
-        accepted_phrases = {self.phrase.casefold(), *(phrase.casefold() for phrase in self.DEFAULT_PHRASES)}
+        accepted_phrases = {
+            self.phrase.casefold(),
+            *(phrase.casefold() for phrase in self.DEFAULT_PHRASES),
+        }
         return normalized in accepted_phrases
 
     def activate(self, text: str) -> bool:
@@ -38,6 +38,38 @@ class AudioSource(Protocol):
     def close(self) -> None:
         """Release the audio input resource."""
         ...
+
+
+class PyAudioInputSource:
+    """Windows microphone source using PyAudioWPatch."""
+
+    SAMPLE_RATE = 16_000
+    CHANNELS = 1
+    SAMPLE_WIDTH_BYTES = 2
+
+    def __init__(self, device_index: int | None = None, frames_per_buffer: int = 1280):
+        import pyaudiowpatch as pyaudio
+
+        self._pyaudio = pyaudio
+        self._pa = pyaudio.PyAudio()
+        self._stream = self._pa.open(
+            format=pyaudio.paInt16,
+            channels=self.CHANNELS,
+            rate=self.SAMPLE_RATE,
+            input=True,
+            input_device_index=device_index,
+            frames_per_buffer=frames_per_buffer,
+        )
+
+    def read(self, frame_size: int) -> bytes:
+        """Read one 16-bit mono PCM frame from the microphone."""
+        return self._stream.read(frame_size, exception_on_overflow=False)
+
+    def close(self) -> None:
+        """Stop and release the microphone stream."""
+        self._stream.stop_stream()
+        self._stream.close()
+        self._pa.terminate()
 
 
 class OpenWakeWordDetector:
@@ -78,3 +110,13 @@ def create_openwakeword_detector(
 
     model = Model()
     return OpenWakeWordDetector(model, wakeword=wakeword, threshold=threshold)
+
+
+def create_microphone_source(
+    device_index: int | None = None, frames_per_buffer: int = 1280
+) -> PyAudioInputSource:
+    """Create a 16 kHz, 16-bit mono Windows microphone source."""
+    return PyAudioInputSource(
+        device_index=device_index,
+        frames_per_buffer=frames_per_buffer,
+    )
