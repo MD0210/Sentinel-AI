@@ -12,7 +12,7 @@ Azure Data Engineering integrations are planned for a later phase.
 
 The first milestone focuses on a small, testable end-to-end workflow:
 
-1. **Wake word** — detect "Hey Sentinel".
+1. **Wake word** — detect "Hey Sentinel", "Hi Sentinel", "Hello Sentinel", or "Sentinel".
 2. **Voice verification** — verify the authorized speaker.
 3. **Security Q&A fallback** — after a failed voice check, require two configured challenge questions.
 4. **Authenticated session** — establish a temporary authorized Sentinel session.
@@ -165,4 +165,4 @@ GitHub: https://github.com/MD0210/Sentinel-AI
 
 ## Status
 
-Early development. The local authentication foundation, wake-word adapter, environment setup, and security workflow are implemented. Microphone-based wake-word detection is available through the voice adapter; real speaker biometric verification and the broader AI/tool integrations remain future work.
+Early development. The local authentication foundation, multiple transcript wake phrases, wake-word adapter, environment setup, and security workflow are implemented. Microphone-based wake-word detection is available through the voice adapter; real speaker biometric verification and the broader AI/tool integrations remain future work.
