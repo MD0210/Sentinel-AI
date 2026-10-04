@@ -2,6 +2,7 @@
 
 from security.auth import SecurityManager
 from security.policy import AuthorizationPolicy, Role
+from security.qa_config import create_fallback_from_environment
 from security.two_question import TwoQuestionFallback
 from voice.auth import VoiceAuthenticator, VoiceAuthProvider
 from voice.wake_call import WakeCall
@@ -45,8 +46,10 @@ class SentinelAgent:
             self.security.record_failure()
         return verified
 
-    def authenticate_fallback(self, answers: tuple[str, str], fallback: TwoQuestionFallback) -> bool:
-        """Authenticate through the configured two-question fallback."""
+    def authenticate_fallback(
+        self, answers: tuple[str, str], fallback: TwoQuestionFallback
+    ) -> bool:
+        """Authenticate through a configured two-question fallback."""
         if self.security.is_locked():
             return False
         verified = fallback.verify(answers)
@@ -55,6 +58,13 @@ class SentinelAgent:
         else:
             self.security.record_failure()
         return verified
+
+    def authenticate_fallback_from_environment(
+        self, answers: tuple[str, str]
+    ) -> bool:
+        """Authenticate using the locally configured Q&A fallback."""
+        fallback = create_fallback_from_environment()
+        return self.authenticate_fallback(answers, fallback)
 
     def check_wake_call(self, text: str) -> bool:
         """Return True when the wake phrase is detected."""
