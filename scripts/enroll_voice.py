@@ -5,7 +5,6 @@ recordings are held in memory and are not written to disk.
 """
 
 from pathlib import Path
-import json
 
 from voice.auth import EcapaTdnnSpeakerModel
 from voice.enrollment import VoiceEnrollment
@@ -35,8 +34,7 @@ def main() -> None:
     print("Sentinel AI voice enrollment")
     print(f"You will record {SAMPLES_REQUIRED} samples of {SECONDS_PER_SAMPLE} seconds each.")
     print("Speak naturally and use the same voice you will use with Sentinel.")
-    print("Raw recordings are kept only in memory and are not saved.
-")
+    print("Raw recordings are kept only in memory and are not saved.\n")
 
     model = EcapaTdnnSpeakerModel()
     enrollment = VoiceEnrollment(model)
