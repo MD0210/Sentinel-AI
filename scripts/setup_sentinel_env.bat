@@ -243,40 +243,11 @@ if errorlevel 1 (
 )
 
 REM ============================================================
-REM STEP 6 - DOWNLOAD OPENWAKEWORD MODEL
+REM STEP 6 - VERIFY ENVIRONMENT
 REM ============================================================
 
 echo.
-echo [6/7] Downloading wake-word model...
-echo.
-echo Required acoustic model:
-echo     hey_jarvis_v0.1
-echo.
-
-".venv\Scripts\python.exe" -c "import openwakeword.utils as u; u.download_models(['hey_jarvis_v0.1'])"
-
-if errorlevel 1 (
-    echo.
-    echo ==========================================
-    echo ERROR: Wake-word model download failed.
-    echo ==========================================
-    echo.
-    echo Check your internet connection and try again.
-    echo.
-    pause
-    exit /b 1
-)
-
-echo.
-echo Wake-word model download completed.
-echo.
-
-REM ============================================================
-REM STEP 7 - VERIFY ENVIRONMENT
-REM ============================================================
-
-echo.
-echo [7/7] Verifying installation...
+echo [6/6] Verifying installation...
 echo.
 
 echo Python version:
