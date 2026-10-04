@@ -52,7 +52,7 @@ def main() -> None:
     profile = enrollment.enroll(samples)
     save_voice_profile(PROFILE_PATH, profile)
     print(f"Voice profile created: {PROFILE_PATH}")
-    print("Enrollment complete. No raw audio was stored.")
+    print(f"Enrollment complete using {SAMPLES_REQUIRED} samples. No raw audio was stored.")
 
 
 if __name__ == "__main__":
