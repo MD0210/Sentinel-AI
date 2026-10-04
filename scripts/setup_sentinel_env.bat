@@ -1,7 +1,7 @@
 @echo off
 REM Sentinel AI - Complete environment setup
 REM Checks Python, checks/downloads required wheels,
-REM recreates .venv, installs from local wheels, and verifies installation.
+REM recreates .venv, installs from local wheels, downloads wake-word models, and verifies installation.
 
 setlocal EnableExtensions EnableDelayedExpansion
 
@@ -17,7 +17,7 @@ REM ============================================================
 REM STEP 1 - CHECK PYTHON
 REM ============================================================
 
-echo [1/6] Checking for Python...
+echo [1/7] Checking for Python...
 echo.
 
 where python >nul 2>&1
@@ -88,7 +88,7 @@ REM STEP 2 - CHECK REQUIREMENTS
 REM ============================================================
 
 echo.
-echo [2/6] Checking requirements...
+echo [2/7] Checking requirements...
 echo.
 
 if not exist "requirements-voice.txt" (
@@ -109,7 +109,7 @@ REM STEP 3 - CHECK WHEELHOUSE
 REM ============================================================
 
 echo.
-echo [3/6] Checking local wheelhouse...
+echo [3/7] Checking local wheelhouse...
 echo.
 
 if not exist "wheel" (
@@ -167,7 +167,7 @@ REM STEP 4 - REMOVE AND RECREATE VENV
 REM ============================================================
 
 echo.
-echo [4/6] Recreating virtual environment...
+echo [4/7] Recreating virtual environment...
 echo.
 
 if exist ".venv" (
@@ -211,7 +211,7 @@ REM STEP 5 - INSTALL FROM LOCAL WHEELS ONLY
 REM ============================================================
 
 echo.
-echo [5/6] Installing packages from wheelhouse...
+echo [5/7] Installing packages from wheelhouse...
 echo.
 
 echo Installation source:
@@ -290,6 +290,9 @@ echo     wheel\
 echo.
 echo Requirements:
 echo     requirements-voice.txt
+echo.
+echo Wake-word model:
+echo     hey_jarvis
 echo.
 echo To activate the environment:
 echo     .venv\Scripts\Activate.ps1
