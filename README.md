@@ -22,6 +22,80 @@ The first milestone focuses on a small, testable end-to-end workflow:
 8. **Response** — return results by text and, later, text-to-speech.
 9. **Audit logging** — record authentication attempts and tool activity locally.
 
+## Current Local Setup
+
+Sentinel AI currently supports a Windows local development environment using Python, a project-local `.venv`, and optional local microphone voice dependencies.
+
+### Requirements
+
+The microphone wake-word adapter uses:
+
+```text
+openwakeword
+numpy
+PyAudioWPatch (Windows)
+```
+
+These dependencies are listed in `requirements-voice.txt`.
+
+### One-Click Environment Setup
+
+The repository includes:
+
+```text
+scripts/setup_sentinel_env.bat
+```
+
+Run the BAT file from Windows Explorer or from a Command Prompt/PowerShell session.
+
+The setup script:
+
+1. Checks whether Python is available.
+2. If Python is missing, attempts to install Python 3.12 through Windows `winget`.
+3. Checks the local `wheel\\` directory for Python wheel packages.
+4. Downloads required or missing compatible wheels when needed.
+5. Removes an existing `.venv\\`.
+6. Creates a fresh `.venv\\`.
+7. Reads `requirements-voice.txt`.
+8. Installs the requirements from the local `wheel\\` directory with PyPI disabled for the installation step.
+9. Lists the installed packages to verify the environment.
+
+### Local Wheelhouse
+
+The `wheel\\` directory is intentionally ignored by Git:
+
+```text
+wheel/*.whl
+```
+
+This keeps large binary wheel files out of the remote repository. The wheel files are therefore **local-only** and must be available on the machine when offline installation is required.
+
+The setup script may access PyPI **only while downloading missing wheel files**. Once the wheelhouse is populated, package installation uses:
+
+```text
+--no-index --find-links wheel
+```
+
+so the installation itself uses only local wheel files.
+
+### Virtual Environment
+
+The `.venv\\` directory is also ignored by Git. It is recreated locally by the setup script.
+
+To activate it manually:
+
+```powershell
+# Activate the Sentinel AI virtual environment
+.\\.venv\\Scripts\\Activate.ps1
+```
+
+Run the test suite with:
+
+```powershell
+# Run all Sentinel AI tests
+python -m unittest discover -s tests -p "test_*.py"
+```
+
 ## Planned Capabilities
 
 - Voice activation and speaker verification
@@ -44,6 +118,7 @@ Sentinel AI should use layered security rather than trusting voice recognition a
 - Authentication failures and tool activity recorded in an audit log
 - Rate limiting and lockouts for repeated authentication failures
 - Secrets kept outside source code and repository history
+- Local `.env` files are ignored by Git
 
 ## High-Level Architecture
 
@@ -90,4 +165,4 @@ GitHub: https://github.com/MD0210/Sentinel-AI
 
 ## Status
 
-Early development. Architecture and the Phase 1 workflow are being established before implementation expands.
+Early development. The local authentication foundation, wake-word adapter, environment setup, and security workflow are implemented. Microphone-based wake-word detection is available through the voice adapter; real speaker biometric verification and the broader AI/tool integrations remain future work.
