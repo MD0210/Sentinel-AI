@@ -43,6 +43,10 @@ class MicrophoneWakeWordTests(unittest.TestCase):
         detector = OpenWakeWordDetector(FakeModel([0.4]))
         self.assertFalse(detector.process(b"audio"))
 
+    def test_detector_uses_16khz_16bit_mono_frames(self):
+        self.assertEqual(OpenWakeWordDetector.SAMPLE_RATE, 16_000)
+        self.assertEqual(OpenWakeWordDetector.FRAME_SIZE, 1_280)
+
 
 if __name__ == "__main__":
     unittest.main()
