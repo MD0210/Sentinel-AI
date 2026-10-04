@@ -9,6 +9,7 @@ import json
 
 from voice.auth import EcapaTdnnSpeakerModel
 from voice.enrollment import VoiceEnrollment
+from voice.profile import save_voice_profile
 from voice.wake_call import create_microphone_source
 
 PROFILE_PATH = Path("config/voice_profile.json")
@@ -30,20 +31,12 @@ def record_sample(audio_source, seconds: int) -> bytes:
     return b"".join(chunks)
 
 
-def save_profile(path: Path, embedding: tuple[float, ...]) -> None:
-    """Write only the speaker embedding to the local profile file."""
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        json.dumps({"embedding": list(embedding)}, indent=2) + "\\n",
-        encoding="utf-8",
-    )
-
-
 def main() -> None:
     print("Sentinel AI voice enrollment")
     print(f"You will record {SAMPLES_REQUIRED} samples of {SECONDS_PER_SAMPLE} seconds each.")
     print("Speak naturally and use the same voice you will use with Sentinel.")
-    print("Raw recordings are kept only in memory and are not saved.\\n")
+    print("Raw recordings are kept only in memory and are not saved.
+")
 
     model = EcapaTdnnSpeakerModel()
     enrollment = VoiceEnrollment(model)
@@ -56,10 +49,10 @@ def main() -> None:
             samples.append(record_sample(audio, SECONDS_PER_SAMPLE))
         finally:
             audio.close()
-        print("Sample captured.\\n")
+        print("Sample captured.\n")
 
     profile = enrollment.enroll(samples)
-    save_profile(PROFILE_PATH, profile.embedding)
+    save_voice_profile(PROFILE_PATH, profile)
     print(f"Voice profile created: {PROFILE_PATH}")
     print("Enrollment complete. No raw audio was stored.")
 
