@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from scripts.enroll_voice import SAMPLES_REQUIRED, record_sample
+from scripts.enroll_voice import SAMPLE_SENTENCES, SAMPLES_REQUIRED, record_sample
 
 
 class FakeAudioSource:
@@ -28,8 +28,10 @@ class EnrollmentScriptTests(unittest.TestCase):
         self.assertEqual(audio, b"abcd" * 2)
         self.assertEqual(source.calls, [4, 4])
 
-    def test_enrollment_uses_five_samples(self):
-        self.assertEqual(SAMPLES_REQUIRED, 5)
+    def test_enrollment_uses_twenty_guided_samples(self):
+        self.assertEqual(SAMPLES_REQUIRED, 20)
+        self.assertEqual(len(SAMPLE_SENTENCES), 20)
+        self.assertTrue(all(sentence.strip() for sentence in SAMPLE_SENTENCES))
 
     def test_save_profile_writes_only_embedding(self):
         with tempfile.TemporaryDirectory() as directory:
