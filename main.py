@@ -1,4 +1,4 @@
-"""Sentinel AI command-line entry point with enforced authentication."""
+"""Sentinel AI command-line entry point with wake-call and authentication."""
 
 from agent.controller import SentinelAgent
 
@@ -7,6 +7,20 @@ def main() -> None:
     sentinel = SentinelAgent()
 
     print("Sentinel AI starting...")
+    print("Say the wake phrase to activate Sentinel.")
+
+    while True:
+        wake_text = input("Wake phrase: ")
+
+        if wake_text.strip().lower() in {"exit", "quit"}:
+            return
+
+        if sentinel.check_wake_call(wake_text):
+            break
+
+        print("Wake phrase not recognized.")
+
+    print("Wake phrase recognized.")
     print("Authentication required.")
     print("Use the secure Q&A fallback to authenticate.")
 
