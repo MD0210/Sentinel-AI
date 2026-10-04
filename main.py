@@ -20,7 +20,9 @@ def authenticate_by_voice(sentinel: SentinelAgent) -> bool:
         audio = record_audio(audio_source, seconds=5)
     finally:
         audio_source.close()
-    verified = verifier.verify(audio)
+    similarity = verifier.similarity(audio)
+    print(f"Voice similarity: {similarity:.3f} (threshold: {verifier.threshold:.3f})")
+    verified = similarity >= verifier.threshold
     if verified:
         sentinel.security.record_success()
     else:
