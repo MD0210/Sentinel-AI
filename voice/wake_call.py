@@ -14,16 +14,10 @@ class WakeCall:
 
     phrase: str = "hey sentinel"
 
-    DEFAULT_PHRASES = ("hey sentinel", "hi sentinel", "hello sentinel", "sentinel")
-
     def matches(self, text: str) -> bool:
-        """Return True when normalized text exactly matches an accepted wake phrase."""
+        """Return True when normalized text exactly matches the configured phrase."""
         normalized = " ".join(text.casefold().strip().split())
-        accepted_phrases = {
-            self.phrase.casefold(),
-            *(phrase.casefold() for phrase in self.DEFAULT_PHRASES),
-        }
-        return normalized in accepted_phrases
+        return normalized == self.phrase.casefold()
 
     def activate(self, text: str) -> bool:
         """Check a transcript and report whether Sentinel should activate."""
@@ -49,7 +43,6 @@ class PyAudioInputSource:
 
     def __init__(self, device_index: int | None = None, frames_per_buffer: int = 1280):
         import pyaudiowpatch as pyaudio
-
         self._pyaudio = pyaudio
         self._pa = pyaudio.PyAudio()
         self._stream = self._pa.open(
@@ -62,11 +55,9 @@ class PyAudioInputSource:
         )
 
     def read(self, frame_size: int) -> bytes:
-        """Read one 16-bit mono PCM frame from the microphone."""
         return self._stream.read(frame_size, exception_on_overflow=False)
 
     def close(self) -> None:
-        """Stop and release the microphone stream."""
         self._stream.stop_stream()
         self._stream.close()
         self._pa.terminate()
@@ -84,16 +75,13 @@ class OpenWakeWordDetector:
         self.threshold = threshold
 
     def process(self, frame: bytes) -> bool:
-        """Return True when the wake-word model crosses the configured threshold."""
         import numpy as np
-
         audio = np.frombuffer(frame, dtype=np.int16)
         predictions = self.model.predict(audio)
         score = predictions.get(self.wakeword, 0.0)
         return float(score) >= self.threshold
 
     def wait_for_wake(self, audio_source: AudioSource) -> bool:
-        """Block until the wake word is detected, then release the audio source."""
         try:
             while True:
                 if self.process(audio_source.read(self.FRAME_SIZE)):
@@ -105,9 +93,7 @@ class OpenWakeWordDetector:
 def create_openwakeword_detector(
     wakeword: str = "hey_jarvis", threshold: float = 0.5
 ) -> OpenWakeWordDetector:
-    """Create a detector using the openWakeWord model package."""
     from openwakeword.model import Model
-
     model = Model(wakeword_models=[wakeword], inference_framework="onnx")
     return OpenWakeWordDetector(model, wakeword=wakeword, threshold=threshold)
 
@@ -115,8 +101,4 @@ def create_openwakeword_detector(
 def create_microphone_source(
     device_index: int | None = None, frames_per_buffer: int = 1280
 ) -> PyAudioInputSource:
-    """Create a 16 kHz, 16-bit mono Windows microphone source."""
-    return PyAudioInputSource(
-        device_index=device_index,
-        frames_per_buffer=frames_per_buffer,
-    )
+    return PyAudioInputSource(device_index=device_index, frames_per_buffer=frames_per_buffer)
