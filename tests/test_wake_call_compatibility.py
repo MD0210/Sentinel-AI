@@ -30,7 +30,7 @@ class WakeCallCompatibilityTests(unittest.TestCase):
     def test_transcript_wake_call_is_preserved(self):
         wake_call = WakeCall()
         self.assertTrue(wake_call.matches("  Hey   Sentinel  "))
-        self.assertFalse(wake_call.matches("hello sentinel"))
+        self.assertFalse(wake_call.matches("hello assistant"))
 
     @patch("numpy.frombuffer")
     def test_microphone_detector_still_waits_for_threshold(self, frombuffer):
