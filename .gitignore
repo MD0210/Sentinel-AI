@@ -225,3 +225,6 @@ wheel/*.whl
 
 # Local biometric profile -- never commit speaker embeddings
 config/voice_profile.json
+
+# Local downloaded ML models
+pretrained_models/

@@ -13,6 +13,22 @@ class SpeakerEmbeddingModel(Protocol):
     def embed(self, audio: bytes): ...
 
 
+class VoiceAuthProvider(Protocol):
+    def verify(self, audio: bytes) -> bool:
+        """Return whether supplied audio passes provider verification."""
+        ...
+
+
+class VoiceAuthenticator:
+    """Provider-neutral voice authentication adapter retained for compatibility."""
+
+    def __init__(self, provider: VoiceAuthProvider):
+        self.provider = provider
+
+    def authenticate(self, audio: bytes) -> bool:
+        return bool(self.provider.verify(audio))
+
+
 def cosine_similarity(left, right) -> float:
     """Return cosine similarity for two numeric embeddings."""
     if len(left) != len(right) or not left:
