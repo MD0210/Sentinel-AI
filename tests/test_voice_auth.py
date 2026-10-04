@@ -1,6 +1,7 @@
 import unittest
 
 from voice.auth import SpeakerEnrollment, SpeakerVerifier, VoiceAuthenticator, cosine_similarity
+from voice.enrollment import VoiceEnrollment, average_embeddings
 
 
 class FakeEmbeddingModel:
@@ -32,6 +33,25 @@ class VoiceAuthenticatorTests(unittest.TestCase):
     def test_existing_provider_contract_remains(self):
         verifier = SpeakerVerifier(FakeEmbeddingModel(), (1.0, 0.0))
         self.assertTrue(VoiceAuthenticator(verifier).authenticate(b"same"))
+
+
+class VoiceEnrollmentTests(unittest.TestCase):
+    def test_average_embeddings_normalizes_mean(self):
+        profile = average_embeddings(((1.0, 0.0), (1.0, 0.0)))
+        self.assertEqual(profile.embedding, (1.0, 0.0))
+
+    def test_enrollment_uses_all_samples(self):
+        profile = VoiceEnrollment(FakeEmbeddingModel()).enroll((b"owner", b"same"))
+        self.assertAlmostEqual(profile.embedding[0], 1.0)
+        self.assertAlmostEqual(profile.embedding[1], 0.0)
+
+    def test_empty_samples_rejected(self):
+        with self.assertRaises(ValueError):
+            VoiceEnrollment(FakeEmbeddingModel()).enroll(())
+
+    def test_mismatched_embeddings_rejected(self):
+        with self.assertRaises(ValueError):
+            average_embeddings(((1.0, 0.0), (1.0,)))
 
 
 if __name__ == "__main__":
