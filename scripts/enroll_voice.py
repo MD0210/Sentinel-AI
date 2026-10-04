@@ -14,7 +14,7 @@ from voice.wake_call import create_microphone_source
 PROFILE_PATH = Path("config/voice_profile.json")
 SAMPLE_RATE = 16_000
 SECONDS_PER_SAMPLE = 5
-SAMPLES_REQUIRED = 3
+SAMPLES_REQUIRED = 5
 FRAME_SIZE = 1280
 
 
@@ -52,7 +52,7 @@ def main() -> None:
     profile = enrollment.enroll(samples)
     save_voice_profile(PROFILE_PATH, profile)
     print(f"Voice profile created: {PROFILE_PATH}")
-    print("Enrollment complete. No raw audio was stored.")
+    print(f"Enrollment complete using {SAMPLES_REQUIRED} samples. No raw audio was stored.")
 
 
 if __name__ == "__main__":
