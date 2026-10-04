@@ -1,4 +1,9 @@
-# Voice dependencies for local microphone wake-word testing
+# Voice dependencies for local microphone wake-word and speaker verification
 openwakeword
 numpy
 PyAudioWPatch; sys_platform == "win32"
+
+# Local ECAPA-TDNN speaker embeddings
+torch
+torchaudio
+speechbrain
