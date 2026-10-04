@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from scripts.enroll_voice import record_sample, save_profile
+from scripts.enroll_voice import record_sample
 
 
 class FakeAudioSource:
@@ -31,9 +31,12 @@ class EnrollmentScriptTests(unittest.TestCase):
     def test_save_profile_writes_only_embedding(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "voice_profile.json"
-            save_profile(path, (0.5, 0.5))
+            from voice.profile import save_voice_profile
+            from voice.enrollment import VoiceProfile
+            save_voice_profile(path, VoiceProfile((0.5, 0.5)))
             data = json.loads(path.read_text(encoding="utf-8"))
-            self.assertEqual(data, {"embedding": [0.5, 0.5]})
+            self.assertEqual(data["version"], 1)
+            self.assertEqual(data["embedding"], [0.5, 0.5])
 
 
 if __name__ == "__main__":
