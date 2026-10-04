@@ -36,3 +36,13 @@ class VoiceAuthenticatorTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class EcapaAdapterTests(unittest.TestCase):
+    def test_ecapa_adapter_rejects_empty_audio_without_loading_model(self):
+        # Constructor/model loading is intentionally not exercised in unit tests.
+        from voice.auth import EcapaTdnnSpeakerModel
+        with self.assertRaises(TypeError):
+            EcapaTdnnSpeakerModel.__new__(EcapaTdnnSpeakerModel).embed(b"")
+
+
