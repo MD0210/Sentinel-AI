@@ -14,10 +14,16 @@ class WakeCall:
 
     phrase: str = "hey sentinel"
 
+    DEFAULT_PHRASES = ("hey sentinel", "hi sentinel", "hello sentinel", "sentinel")
+
     def matches(self, text: str) -> bool:
         """Return True when normalized text exactly matches the configured phrase."""
         normalized = " ".join(text.casefold().strip().split())
-        return normalized == self.phrase.casefold()
+        accepted_phrases = {
+            self.phrase.casefold(),
+            *(phrase.casefold() for phrase in self.DEFAULT_PHRASES),
+        }
+        return normalized in accepted_phrases
 
     def activate(self, text: str) -> bool:
         """Check a transcript and report whether Sentinel should activate."""
