@@ -1,8 +1,7 @@
-"""Local speaker-verification provider interface and embedding comparison.
+"""Local speaker-verification providers.
 
-The concrete model backend is intentionally isolated behind SpeakerEmbeddingModel.
-This milestone provides the security-safe comparison/enrollment logic without
-shipping a biometric model or storing raw audio.
+The ECAPA-TDNN adapter uses SpeechBrain's pretrained VoxCeleb speaker encoder.
+The model is downloaded by SpeechBrain on first use and remains local afterward.
 """
 
 from dataclasses import dataclass
@@ -50,3 +49,49 @@ class SpeakerEnrollment:
         if not audio:
             raise ValueError("enrollment audio must not be empty")
         return tuple(float(value) for value in self.model.embed(audio))
+
+
+class EcapaTdnnSpeakerModel:
+    """SpeechBrain ECAPA-TDNN speaker embedding adapter.
+
+    Input audio must be raw signed 16-bit PCM, mono, 16 kHz, matching Sentinel's
+    existing microphone capture format. Model files are downloaded to the local
+    SpeechBrain cache on first initialization.
+    """
+
+    SAMPLE_RATE = 16_000
+    SAMPLE_WIDTH_BYTES = 2
+    MIN_SAMPLES = 16_000
+
+    def __init__(
+        self,
+        source: str = "speechbrain/spkrec-ecapa-voxceleb",
+        savedir: str = "pretrained_models/spkrec-ecapa-voxceleb",
+    ):
+        from speechbrain.inference.speaker import EncoderClassifier
+
+        self._classifier = EncoderClassifier.from_hparams(
+            source=source,
+            savedir=savedir,
+            run_opts={"device": "cpu"},
+        )
+
+    def embed(self, audio: bytes) -> tuple[float, ...]:
+        """Convert 16-bit mono PCM audio into an ECAPA speaker embedding."""
+        if not audio or len(audio) % self.SAMPLE_WIDTH_BYTES:
+            raise ValueError("audio must contain complete 16-bit PCM samples")
+
+        sample_count = len(audio) // self.SAMPLE_WIDTH_BYTES
+        if sample_count < self.MIN_SAMPLES:
+            raise ValueError("speaker verification audio must contain at least 1 second")
+
+        import numpy as np
+        import torch
+
+        samples = np.frombuffer(audio, dtype=np.int16).copy()
+        waveform = torch.from_numpy(samples).float().div(32768.0).unsqueeze(0)
+
+        with torch.no_grad():
+            embedding = self._classifier.encode_batch(waveform)
+
+        return tuple(float(value) for value in embedding.reshape(-1).cpu().tolist())
