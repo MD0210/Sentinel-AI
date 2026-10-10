@@ -92,6 +92,57 @@ This GUI should make Sentinel's hierarchy and collaboration understandable witho
 
 ---
 
+## Sentinel as the First Customer of Its Own Agent Factory
+
+**Strategic priority:** use Sentinel's first development team to help build and test Sentinel itself, then reuse the same workflow to help create other SaaS products. This is a planned capability, not an implemented autonomous coding system.
+
+### Development-team roles
+
+- **Sentinel Core / Team Lead:** receives a goal, decomposes it into bounded work, delegates tasks, tracks dependencies, and reports progress.
+- **Product Manager:** defines user stories, acceptance criteria, and issue updates.
+- **Software Architect:** proposes architecture and reviews technical trade-offs before implementation.
+- **Developer Agent:** implements one approved task at a time in an isolated branch/worktree or sandbox.
+- **QA Engineer:** runs the allowed test suite and maps results to acceptance criteria.
+- **Security Reviewer:** checks authorization, secrets, dependency risks, unsafe execution, and the proposed diff.
+- **DevOps Engineer:** helps prepare CI/CD and deployment changes, with production operations kept approval-gated.
+
+For the MVP, these can be role profiles performed by a small number of model sessions; do not create a separate server or model for each role by default.
+
+### Initial end-to-end workflow
+
+1. Select a GitHub issue or submit a development goal.
+2. Retrieve only the authorized repository files, issue context, and documentation needed for the task.
+3. Generate a plan with dependencies, acceptance criteria, affected areas, and a risk classification.
+4. Ask for approval when the plan is ambiguous, broad, or high-risk.
+5. Execute one scoped change in an isolated workspace with a restricted tool allowlist.
+6. Run repository-approved tests and capture their actual output.
+7. Have a separate review step inspect the diff, test results, and security implications.
+8. Present a summary of changes, test outcomes, limitations, and risks.
+9. After explicit approval, create a branch or draft pull request if that capability has been implemented and enabled. Merging and production deployment remain separate human-approved actions.
+
+### Security requirements
+
+- Start with read-only GitHub access; expand to branch/PR writes only when necessary.
+- Never expose tokens, secrets, or raw credentials to model prompts or logs.
+- Enforce authorization in the tool execution layer, independent of agent instructions.
+- Treat repository content, issue comments, and retrieved documents as untrusted data, not policy instructions.
+- Run generated code and tests in an isolated environment with resource and network restrictions.
+- Do not permit unrestricted host shell access, self-granted permissions, automatic merges, or unattended production deployment.
+- Record task IDs, agent handoffs, tool calls, permission decisions, test outcomes, changed files, and approval events.
+- Keep repository access scoped to explicitly authorized repositories and organizations.
+
+### Definition of the first useful milestone
+
+Sentinel can read a selected issue, produce a plan with acceptance criteria, and help prepare one small tested code change in a controlled workspace. The user can inspect the diff and test output before any merge. This milestone is more valuable than building a large agent roster or a polished dashboard before the development workflow is reliable.
+
+### Related GitHub issues
+
+- [#45 — Working Sentinel Core model-response loop](https://github.com/MD0210/Sentinel-AI/issues/45)
+- [#46 — Permission-aware tool registry and execution policy](https://github.com/MD0210/Sentinel-AI/issues/46)
+- [#50 — GitHub read-only connector with audit logging](https://github.com/MD0210/Sentinel-AI/issues/50)
+- [#63 — Governed hierarchical-agent prototype](https://github.com/MD0210/Sentinel-AI/issues/63)
+- [#64 — Build Sentinel's AI software-development team](https://github.com/MD0210/Sentinel-AI/issues/64)
+
 ## Phase 1 — Build Sentinel for personal use
 
 **Goal:** Make Sentinel useful on the developer's Windows laptop before commercial hosting.
@@ -427,11 +478,15 @@ Shared infrastructure can serve multiple tenants, so infrastructure does not alw
 
 ## Recommended order of execution
 
-1. **Now:** finish Sentinel's personal core and two agents on the existing laptop.
-2. **Next:** expand to four, then ten agents through configuration and testing rather than separate deployments.
-3. **After that:** isolate the reusable agent engine and introduce tenant-aware storage and authorization.
-4. **Then:** deploy a limited hosted pilot and meter every run.
-5. **Finally:** set final subscription and pay-as-you-go prices using actual cost and customer feedback.
+1. **Make Sentinel useful to its own developer:** implement the model-response loop, task model, and clear failure handling.
+2. **Secure the execution foundation:** add permission-aware tools, approval gates, audit events, and automated security tests.
+3. **Connect GitHub read-only:** let Sentinel retrieve repository files, issues, and pull-request context without write access.
+4. **Build the AI development team:** plan from an issue, implement one scoped change in an isolated workspace, run tests, review the diff, and present results for approval.
+5. **Prove hierarchical delegation and add the dashboard:** make handoffs visible and permissions independent across parent and child agents.
+6. **Expand the Agent Factory:** add more role profiles and specialist agents as repeatable configurations, not separate servers by default.
+7. **Add local/offline execution and selected business integrations:** verify queue recovery, stale-action checks, and connector authorization.
+8. **Prepare for customers:** introduce tenant isolation, usage metering, deployment, privacy operations, backups, and support only after the personal workflow is dependable.
+9. **Validate a paid pilot:** measure real model and infrastructure costs, test with a small number of users, and then refine pricing.
 
 ## Pricing and vendor references
 
