@@ -12,6 +12,68 @@ The **AI Agent Factory** is a subsystem Sentinel uses to create, configure, test
 
 Specialist agents use approved tools and have explicit purposes, model settings, memory scopes, and permissions. Ten agents do **not** require ten servers or ten separate models: agent definitions can share a model runtime and execution infrastructure, subject to resource and concurrency limits.
 
+## Sentinel AI GUI and Hierarchical Agent Command Center
+
+The planned GUI is the user's visual command center for Sentinel Core, specialist agents, sub-agents, integrations, and coordinated work. Treat this as product scope for the roadmap, not as an implemented feature.
+
+### Agent hierarchy and identity
+
+The interface should represent a hierarchy with **Sentinel AI as the master orchestrator**, specialist agents beneath it, and optional sub-agents beneath specialist agents. Each agent should have a configurable profile containing:
+
+- Stable ID, display name, and role (for example, **Marc Thomas — CFO** or **John Doe — Marketing Analyst**).
+- Purpose, instructions, parent agent, and delegated responsibilities.
+- Model/provider settings, autonomy level, allowed tools, memory scope, and execution limits.
+- Enabled/disabled state, runtime or heartbeat status, current task, and recent execution history.
+
+Parent-child placement determines organizational relationships and delegation paths only. It must not automatically grant a child the parent's connector permissions, credentials, or memory access.
+
+### Integration tiles
+
+Display approved connectors as icon-based tiles on the Sentinel dashboard and on each agent's profile. Example services include SharePoint, Stripe, Azure, HubSpot, and Facebook Ads. Each tile should communicate:
+
+- Connection and credential status, including expired or disconnected states.
+- The operations supported by that connector and the permission scope granted.
+- Which agents can access it, and whether access is read-only or includes approved write operations.
+- Last successful check or use, plus relevant errors.
+
+An icon or configured connector entry is not proof that a live account is connected. Only show a healthy/connected state after a real authorized connection check.
+
+### Agent-to-agent communications
+
+Sentinel should coordinate agents through the orchestrator and task system rather than relying on invisible, unbounded conversations. For example:
+
+1. A user asks Sentinel for a business performance summary.
+2. Sentinel delegates financial analysis to Marc Thomas (CFO).
+3. Marc requests campaign metrics from John Doe (Marketing Analyst).
+4. John retrieves authorized HubSpot or Facebook Ads data and returns a structured result.
+5. Marc combines the results with authorized financial information and reports back to Sentinel.
+6. Sentinel presents the final answer and links to the relevant task history.
+
+The GUI should show message and task handoffs, who initiated each action, the source agent and recipient, status, results, failures, and any approval requests. Agent communication should be bounded by task scopes, tool permissions, timeouts, and execution limits; retrieved content must be treated as untrusted data.
+
+### Main GUI views
+
+- **Overview:** system and worker status, agent health, queued/running/failed tasks, pending approvals, recent activity, and integration health.
+- **Agent hierarchy:** expandable tree or node graph for navigating parent agents and sub-agents.
+- **Agent details:** edit identity, role, parent, instructions, model, autonomy limits, permissions, and memory scope.
+- **Integrations:** connector catalog and per-agent access management, with explicit scopes and connection status.
+- **Communications and task trace:** chronological view of delegation, messages, tool calls, results, and audit events.
+- **Approvals:** review and approve or reject sensitive actions with appropriate re-authentication.
+- **Execution location:** show whether a task runs on the local device or a hosted worker and whether it is waiting for the laptop, network, model, or user approval.
+
+### Implementation and security sequence
+
+1. Define the agent and hierarchy data model, connector registry, and task/message event schema.
+2. Build a read-only hierarchy and agent-detail view using sample data before connecting real accounts.
+3. Connect the GUI to Sentinel's authenticated API; do not expose arbitrary shell access or a local laptop directly to the public internet.
+4. Add real agent/task status, connector health, and communication/audit events.
+5. Add controlled agent editing, connector permission management, and approval workflows only after backend authorization is enforced and tested.
+6. Add secure remote/mobile access and hosted workers as separate milestones; tasks continue only while their assigned execution environment and dependencies are available.
+
+This GUI should make Sentinel's hierarchy and collaboration understandable without weakening the existing principles of least privilege, tenant isolation, human approval, and auditable execution.
+
+---
+
 ## Guiding principles
 
 1. Build and prove the local product before paying for cloud infrastructure.
