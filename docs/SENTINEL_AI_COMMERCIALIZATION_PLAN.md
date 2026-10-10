@@ -6,7 +6,7 @@
 
 ## Product vision
 
-**Sentinel is the core assistant.** It is the customer's primary conversational interface, speaks responses through a JARVIS-inspired voice interface, understands requests, routes tasks, and supervises specialist agents.
+**Sentinel is the core assistant.** It is the user's primary conversational interface for understanding requests, coordinating tasks, enforcing security policies, and supervising specialist agents. Sentinel should have its own distinct product identity, with configurable voice and text interaction rather than relying on comparisons to other fictional assistants.
 
 The **AI Agent Factory** is a subsystem Sentinel uses to create, configure, test, version, run, and manage specialist agents.
 
@@ -24,6 +24,9 @@ Specialist agents use approved tools and have explicit purposes, model settings,
 8. Do not enable autonomous production actions until they have specific tests, approval gates, and audit logging.
 9. Do not promise unlimited AI usage under a fixed subscription.
 10. Keep personal/local mode and hosted customer environments separate.
+11. Design for offline usefulness: local memory, a durable task queue, and local-model support should work without internet when the laptop is powered on.
+12. Treat business integrations as permissioned connectors shared by the core and agents, not as ad hoc credentials embedded in individual agents.
+13. Connect employer and customer systems only with explicit authorization; isolate credentials, content, memory, and logs by user or tenant.
 
 ---
 
@@ -169,6 +172,64 @@ Do not assume that separating records by a tenant ID alone is sufficient; enforc
 
 ---
 
+---
+
+## Business Integration Layer
+
+**Goal:** Let Sentinel Core and authorized specialist agents work across a user's approved business ecosystem through a consistent, auditable connector framework.
+
+### Candidate integrations
+
+| System | Initial read-oriented use cases | Higher-risk actions to gate |
+|---|---|---|
+| SharePoint / Microsoft 365 | Search authorized documents, summarize policies, retrieve project context | Editing or sharing documents, changing permissions |
+| Azure | Inspect approved resources, pipeline status, logs, and monitoring data | Deployments, resource changes, deletion, production operations |
+| GitHub | Read repositories, issues, pull requests, and code; prepare reviews | Pushing changes, merging pull requests, changing repository settings |
+| Azure DevOps | Read assigned work items, sprint context, build and release status | Updating work items, changing pipelines, releases |
+| Outlook / Teams | Summarize authorized messages and extract action items | Sending messages, invitations, or external communications |
+| Data platforms / Power BI | Query approved datasets and summarize reporting results | Data writes, permission changes, production refresh or deployment |
+
+Availability depends on the connector implementation, the provider's API, the user's permissions, organizational policies, and any required administrator consent.
+
+### Recommended connector architecture
+
+- **Connector registry:** declares each connector's identity, supported operations, input/output schemas, and risk level.
+- **Identity and credential manager:** uses supported OAuth flows, managed identities, or securely stored customer credentials; never embed secrets in prompts or source code.
+- **Policy enforcement:** checks the user, tenant, agent, requested operation, and resource before executing a tool.
+- **Approval service:** requests explicit confirmation for writes and other consequential actions.
+- **Audit trail:** records who or what requested an operation, the connector used, the decision, and the outcome without unnecessarily logging sensitive content.
+- **Tenant-aware configuration:** scopes connectors, tokens, files, agent memory, and logs to the correct user or customer.
+- **Connector tests:** include authorization failures, expired credentials, rate limits, malformed responses, prompt injection in retrieved content, and attempts to exceed granted permissions.
+
+Start with read-only operations. Add write operations one at a time, with dedicated tests and approval rules. Treat content retrieved from SharePoint, email, repositories, and other external systems as untrusted data, not as instructions that can override Sentinel's security policy.
+
+### Offline Intelligence Mode and synchronization
+
+Sentinel should continue useful local work when the laptop is disconnected, as long as it is powered on, awake, and the required local processes and models are running.
+
+Offline-capable tasks can include:
+- Processing a durable local task queue when the task needs only local resources.
+- Searching and summarizing local files and previously synchronized knowledge.
+- Running a supported local model through a local runtime such as Ollama.
+- Saving user feedback, task outcomes, and reusable workflow records to local storage.
+- Preparing a draft or analysis for later review.
+
+Cloud-dependent tasks should be marked as waiting for connectivity. When the device reconnects, Sentinel should refresh data and re-check authorization, freshness, and the continued validity of each queued action before running it. Do not blindly replay stale writes, external messages, deployments, or other consequential operations.
+
+Offline does not mean always-on: a powered-off computer cannot run tasks, and sleep may pause background work. Local inference performance is constrained by available memory, GPU resources, model size, and other running applications.
+
+### Suggested implementation sequence
+
+1. Define a common connector interface and operation schema.
+2. Implement one read-only connector first (GitHub is a practical starting point for this repository).
+3. Add scoped credentials, policy checks, and audit events before expanding access.
+4. Add SharePoint/Microsoft Graph and Azure connectors only with appropriate account and organizational authorization.
+5. Add a durable local queue with explicit states such as `pending`, `waiting_for_network`, `needs_approval`, `running`, `succeeded`, `failed`, and `cancelled`.
+6. Add synchronization and stale-action checks; require fresh approval where needed.
+7. Add tenant isolation and integration security tests before a customer-hosted or SaaS pilot.
+
+All integrations and background capabilities described in this section are roadmap items until implemented and tested.
+
 ## Phase 3 — First hosted customer trial
 
 **Goal:** Support one customer with Sentinel and a selectable number of specialist agents.
@@ -177,6 +238,7 @@ Do not assume that separating records by a tenant ID alone is sufficient; enforc
 
 - Web interface with chat; add browser microphone and spoken responses where reliable.
 - FastAPI backend.
+- A shared Business Integration Layer for approved SharePoint/Microsoft 365, Azure, GitHub, and other connectors, enabled only after authorization and security review.
 - Managed PostgreSQL for accounts, tenant data, agent configurations, usage, and execution metadata.
 - Object storage only if the product needs customer uploads, generated files, or durable artifacts.
 - Azure Container Apps or a comparable managed container host for the API and background work.
