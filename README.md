@@ -1,42 +1,78 @@
 # Sentinel AI
 
-A secure, voice-authenticated AI work agent for Windows, automation, productivity, and developer workflows.
+**One intelligent core. An ecosystem of specialized AI agents.**
+
+Sentinel AI is a personal AI platform in development, designed to help people interact with their digital environment, coordinate workflows, and build an ecosystem of specialized AI agents.
+
+Sentinel serves as the primary interface: it interprets requests, coordinates tasks, applies security policies, and can delegate work to specialized agents through a unified system. The long-term vision is a modular platform that runs locally, integrates with cloud services when useful, and can eventually support secure deployments for individuals and businesses.
 
 ## Vision
 
-Sentinel AI is designed to act as a local work assistant on a Windows machine. The user can activate Sentinel by voice, authenticate, ask questions or give tasks, and allow the agent to use controlled tools such as GitHub, VS Code, the local filesystem, and a terminal.
+Build an extensible AI platform where one intelligent core can create, configure, test, coordinate, and manage specialized agents—each with a defined purpose, permissions, and responsibilities.
 
-Azure Data Engineering integrations are planned for a later phase.
+## Core Components
 
-## Phase 1
+- **Sentinel Core** — The primary assistant for understanding requests, coordinating actions, and presenting results.
+- **AI Agent Factory** — A planned subsystem for creating, configuring, testing, and managing specialized AI agents.
+- **Tool Integration Layer** — Connects agents to approved tools, applications, repositories, files, and development environments.
+- **Security and Policy Engine** — Establishes permissions, approval requirements, and boundaries around sensitive operations.
+- **Memory and Context** — A foundation for retaining useful information and supporting continuity across tasks.
+- **Voice and Conversational Interface** — Supports natural interaction through voice and text.
 
-The first milestone focuses on a small, testable end-to-end workflow:
+These components describe the intended architecture; not all capabilities are implemented yet.
 
-1. **Wake word** — detect "Hey Sentinel", "Hi Sentinel", "Hello Sentinel", or "Sentinel".
-2. **Voice verification** — verify the authorized speaker.
-3. **Security Q&A fallback** — after a failed voice check, require two configured challenge questions.
-4. **Authenticated session** — establish a temporary authorized Sentinel session.
-5. **Speech-to-text** — convert the user's request into text.
-6. **Agent orchestration** — interpret the request and select an explicit tool.
-7. **GitHub integration** — begin with safe, read-only GitHub operations.
-8. **Response** — return results by text and, later, text-to-speech.
-9. **Audit logging** — record authentication attempts and tool activity locally.
+## Current Development Focus
+
+The initial milestone focuses on a secure local Windows workflow:
+
+1. Detect supported Sentinel wake-word transcript phrases.
+2. Verify the authorized speaker as the voice-authentication work matures.
+3. Use configured security questions as a fallback where implemented.
+4. Establish an authenticated session.
+5. Convert microphone input to text.
+6. Route requests through an agent orchestration layer.
+7. Start with safe, read-only GitHub operations.
+8. Return results through text, with text-to-speech planned.
+9. Record authentication attempts and tool activity locally.
+
+Azure Data Engineering integrations and broader workflow automation are planned for later phases.
+
+## Development Status
+
+**Early development.** The repository contains a local authentication foundation, transcript wake phrases, microphone input and wake-word adapters, environment setup scripts, and security workflow components. A microphone smoke-test script is included for the available openWakeWord acoustic model.
+
+The four Sentinel transcript phrases are supported, but acoustic models for those exact phrases and speaker biometric verification remain future work. The full AI reasoning, tool-execution, and agent-factory experience is still evolving. Treat planned capabilities below as roadmap items, not finished features.
+
+## Roadmap
+
+1. **Secure Sentinel Core** — Strengthen the local assistant and authentication workflow.
+2. **Controlled tool use** — Build and validate permission-aware integrations, starting with read-only operations.
+3. **Specialist agents** — Add agents with explicit scopes, instructions, and tests.
+4. **AI Agent Factory** — Develop the workflow for creating, configuring, testing, and managing agents.
+5. **Coordinated agent ecosystem** — Expand toward a larger set of cooperating specialist agents.
+6. **Customer pilot readiness** — Add stronger isolation, observability, deployment, and support practices.
+7. **Commercial evaluation** — Assess a hosted, multi-user service only after the security and reliability foundations are ready.
+
+## Design Principles
+
+- **Local-first development:** Keep local execution as the starting point, with optional hosted-model and cloud integrations.
+- **Modular architecture:** Add agents and tools without rebuilding the core.
+- **Least privilege:** Give each agent only the access it needs.
+- **Human approval:** Require confirmation for consequential, destructive, or externally visible actions.
+- **Testability and auditability:** Make agent behavior, tool activity, and failures easier to inspect.
+- **Secure by design:** Keep secrets out of source code and apply layered controls instead of relying on voice recognition alone.
 
 ## Current Local Setup
 
-Sentinel AI currently supports a Windows local development environment using Python, a project-local `.venv`, and optional local microphone voice dependencies.
+Sentinel AI currently targets a Windows development environment using Python, a project-local `.venv`, and optional microphone/voice dependencies.
 
 ### Requirements
 
-The microphone wake-word adapter uses:
+The microphone wake-word adapter uses packages listed in `requirements-voice.txt`, including:
 
-```text
-openwakeword
-numpy
-PyAudioWPatch (Windows)
-```
-
-These dependencies are listed in `requirements-voice.txt`.
+- `openwakeword`
+- `numpy`
+- `PyAudioWPatch` (Windows)
 
 ### One-Click Environment Setup
 
@@ -46,123 +82,84 @@ The repository includes:
 scripts/setup_sentinel_env.bat
 ```
 
-Run the BAT file from Windows Explorer or from a Command Prompt/PowerShell session.
-
-The setup script:
-
-1. Checks whether Python is available.
-2. If Python is missing, attempts to install Python 3.12 through Windows `winget`.
-3. Checks the local `wheel\\` directory for Python wheel packages.
-4. Downloads required or missing compatible wheels when needed.
-5. Removes an existing `.venv\\`.
-6. Creates a fresh `.venv\\`.
-7. Reads `requirements-voice.txt`.
-8. Installs the requirements from the local `wheel\\` directory with PyPI disabled for the installation step.
-9. Lists the installed packages to verify the environment.
+Run the batch file from Windows Explorer, Command Prompt, or PowerShell. The script checks for Python, may attempt to install Python 3.12 through Windows `winget` if Python is missing, prepares a local wheelhouse, recreates `.venv`, and installs the listed voice requirements.
 
 ### Local Wheelhouse
 
-The `wheel\\` directory is intentionally ignored by Git:
+The `wheel/` directory is intentionally ignored by Git so large binary wheel files are not committed:
 
 ```text
 wheel/*.whl
 ```
 
-This keeps large binary wheel files out of the remote repository. The wheel files are therefore **local-only** and must be available on the machine when offline installation is required.
+Wheel files are local to your machine. The setup script may access PyPI to download missing wheels; package installation then uses the local wheelhouse with `--no-index --find-links wheel`.
 
-The setup script may access PyPI **only while downloading missing wheel files**. Once the wheelhouse is populated, package installation uses:
+### Activate the Environment and Run Tests
 
-```text
---no-index --find-links wheel
-```
-
-so the installation itself uses only local wheel files.
-
-### Virtual Environment
-
-The `.venv\\` directory is also ignored by Git. It is recreated locally by the setup script.
-
-To activate it manually:
+From PowerShell:
 
 ```powershell
-# Activate the Sentinel AI virtual environment
-.\\.venv\\Scripts\\Activate.ps1
-```
-
-Run the test suite with:
-
-```powershell
-# Run all Sentinel AI tests
+.\.venv\Scripts\Activate.ps1
 python -m unittest discover -s tests -p "test_*.py"
 ```
 
-## Planned Capabilities
+## Security Principles in Practice
 
-- Voice activation and speaker verification
-- Personal security challenge questions
-- AI agent orchestration and tool routing
-- GitHub repository and code workflows
-- VS Code workspace inspection and controlled code changes
-- Controlled Windows terminal and filesystem operations
-- Local project/context memory
-- Azure Data Engineering integrations in a later phase
+The security design aims to include:
 
-## Security Principles
-
-Sentinel AI should use layered security rather than trusting voice recognition alone.
-
-- Read-only operations by default
+- Read-only operations by default where practical
 - Explicit confirmation before consequential or destructive actions
 - Least-privilege access to external services
 - Security challenge answers stored as salted hashes, never plain text
-- Authentication failures and tool activity recorded in an audit log
+- Local audit logs for authentication attempts and tool activity
 - Rate limiting and lockouts for repeated authentication failures
 - Secrets kept outside source code and repository history
-- Local `.env` files are ignored by Git
+- Local `.env` files excluded from Git
+
+Security controls and integrations are being developed and should be reviewed before using Sentinel with sensitive data or real-world operations.
 
 ## High-Level Architecture
 
-The architecture is intentionally written with simple Mermaid syntax for GitHub's renderer.
+The following diagram shows the intended direction, not a claim that every component is complete.
 
 ```mermaid
 flowchart TD
-    user[User Voice] --> wake[Wake Word]
-    wake --> verify[Voice Verification]
-    verify -->|Verified| session[Authenticated Session]
-    verify -->|Failed| q1[Security Question 1]
-    q1 -->|Correct| q2[Security Question 2]
-    q1 -->|Incorrect| lock[Lockout]
-    q2 -->|Correct| session
-    q2 -->|Incorrect| lock
-
-    session --> stt[Speech to Text]
-    stt --> agent[AI Agent]
-    agent --> github[GitHub]
-    agent --> vscode[VS Code]
-    agent --> terminal[Windows Terminal]
-    agent --> files[Local Filesystem]
-
-    github --> result[Tool Result]
-    vscode --> result
-    terminal --> result
-    files --> result
-
-    result --> agent
-    agent --> response[Text or Text to Speech]
+    user[User: Voice or Text] --> interface[Conversational Interface]
+    interface --> core[Sentinel Core]
+    core --> policy[Security and Policy Checks]
+    policy -->|Allowed| factory[AI Agent Factory]
+    policy -->|Approval required| approval[User Approval]
+    approval --> factory
+    factory --> agents[Specialist Agents]
+    agents --> tools[Approved Tool Integrations]
+    tools --> audit[Results and Audit Records]
+    audit --> core
+    core --> response[Response to User]
 ```
 
-### Architecture Flow
+## Planned Integrations
 
-**Voice input → Wake word → Voice verification → Security fallback if needed → Authenticated session → Speech-to-text → AI agent → Controlled tools → Result → Response.**
+Potential integrations include:
 
-## Development Approach
+- GitHub repository and code workflows
+- VS Code workspace inspection and controlled code changes
+- Windows terminal and filesystem operations
+- Local project and task context
+- Azure Data Engineering workflows
+- Optional hosted models and cloud infrastructure
 
-Sentinel AI will be built incrementally. The first goal is a reliable local authentication and agent loop, followed by GitHub and development-tool integrations. Azure services can then be added as explicit tools without changing the core agent architecture.
+Each integration should be added with explicit permissions, tests, and appropriate approval boundaries.
+
+## Commercialization
+
+The long-term commercial direction is to evaluate a product built around the Sentinel Core and AI Agent Factory. Multi-user hosting, tenant isolation, deployment, billing, and support are future work—not current capabilities.
+
+See the [Sentinel AI Commercialization Plan](docs/SENTINEL_AI_COMMERCIALIZATION_PLAN.md) for the proposed phases, infrastructure options, security considerations, and initial business model.
 
 ## Repository
 
-GitHub: https://github.com/MD0210/Sentinel-AI
+[GitHub: MD0210/Sentinel-AI](https://github.com/MD0210/Sentinel-AI)
 
-## Status
+## License
 
-Early development. The local authentication foundation, multiple transcript wake phrases, microphone input adapter, wake-word adapter, environment setup, and security workflow are implemented. A local microphone smoke-test script is included for the available openWakeWord acoustic model. The four Sentinel transcript phrases remain supported; real acoustic models for those exact phrases and speaker biometric verification remain future work.
+A license has not yet been specified. Confirm the intended licensing and distribution terms before redistributing or commercializing the project.
