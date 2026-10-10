@@ -12,7 +12,7 @@ python -m compileall -q agent security voice scripts tests main.py
 python -m unittest discover -s tests -p "test_*.py" -v
 ```
 
-The model-provider tests mock HTTP responses. No API key, model download, microphone, or running model is required.
+The model-provider and model-router tests use mocked providers and HTTP responses. No API key, model download, microphone, or running model is required.
 
 ## 2. Run Sentinel with a local Ollama model
 
@@ -80,10 +80,42 @@ Gemini offers a free API tier for eligible models, subject to quota and availabi
 
 The same adapter works with an OpenAI-compatible chat-completions endpoint: set `SENTINEL_MODEL_PROVIDER=openai-compatible`, `SENTINEL_MODEL_NAME` to a model supported by the service, `SENTINEL_MODEL_BASE_URL` to its API base URL, and `SENTINEL_MODEL_API_KEY` to its key. The default base URL is `https://api.openai.com/v1`, but usage there may be paid. Hugging Face Inference Providers has a small monthly free credit for free users, subject to change; check its [pricing page](https://huggingface.co/docs/inference-providers/pricing). Do not assume a hosted endpoint is free or unlimited.
 
+## 5. Configure model routing
+
+Sentinel classifies each prompt using transparent keyword rules. Coding cues take precedence over reasoning cues; unmatched requests are classified as general. If a specialist model is not configured, Sentinel automatically uses the default model. Classification does not make an additional model/API call.
+
+The existing `SENTINEL_MODEL_*` variables configure the default model. Optional specialist routes require both a provider and a model name.
+
+**Example: keep general and reasoning on the default model, route coding requests to a separate local model (PowerShell):**
+
+```powershell
+$env:SENTINEL_MODEL_PROVIDER = "ollama"
+$env:SENTINEL_MODEL_NAME = "llama3.2"
+$env:SENTINEL_MODEL_CODING_PROVIDER = "ollama"
+$env:SENTINEL_MODEL_CODING_NAME = "qwen2.5-coder:3b"
+python main.py
+```
+
+Pull the specialist model first if needed:
+
+```bash
+ollama pull qwen2.5-coder:3b
+```
+
+Specialist configuration variables:
+
+| Route | Required variables | Optional variables |
+|---|---|---|
+| Coding | `SENTINEL_MODEL_CODING_PROVIDER`, `SENTINEL_MODEL_CODING_NAME` | `SENTINEL_MODEL_CODING_BASE_URL`, `SENTINEL_MODEL_CODING_API_KEY`, `SENTINEL_MODEL_CODING_TIMEOUT` |
+| Reasoning | `SENTINEL_MODEL_REASONING_PROVIDER`, `SENTINEL_MODEL_REASONING_NAME` | `SENTINEL_MODEL_REASONING_BASE_URL`, `SENTINEL_MODEL_REASONING_API_KEY`, `SENTINEL_MODEL_REASONING_TIMEOUT` |
+
+For hosted specialists, set the route-specific base URL and API key too. Never commit keys. An unconfigured specialist route falls back to the default model. The initial classifier is intentionally simple; review and improve its routing rules as real usage reveals misclassifications.
+
 ## Current limitations
 
 - The Core performs one synchronous text-generation call per request.
 - The first turn sends the current request only; conversational history is not yet persisted.
+- Routing is rule-based, not semantic; complex or ambiguous prompts can be classified incorrectly.
 - Ollama must be installed and its model pulled separately.
 - The hosted adapter supports OpenAI-compatible chat-completions APIs, not every provider-specific API.
 - Authentication behavior is inherited from the existing application and is not being reworked in this workstream.
