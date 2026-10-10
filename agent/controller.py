@@ -2,11 +2,8 @@
 
 from getpass import getpass
 
-from agent.model_provider import (
-    ModelProvider,
-    ModelProviderError,
-    create_model_provider,
-)
+from agent.model_provider import ModelProvider, ModelProviderError
+from agent.model_router import create_model_router
 from security.auth import SecurityManager
 from security.policy import AuthorizationPolicy, Role
 from security.qa_config import create_fallback_from_environment
@@ -28,7 +25,7 @@ class SentinelAgent:
         self.security = security or SecurityManager()
         self.policy = policy or AuthorizationPolicy()
         self.wake_call = wake_call or WakeCall()
-        self.model_provider = model_provider or create_model_provider()
+        self.model_provider = model_provider or create_model_router()
         self.role = Role.USER
 
     @property
@@ -58,7 +55,7 @@ class SentinelAgent:
     def authenticate_fallback(
         self, answers: tuple[str, str], fallback: TwoQuestionFallback
     ) -> bool:
-        """Authenticate through a configured two-question fallback."""
+        """Authenticate through a supplied two-question fallback."""
         if self.security.is_locked():
             return False
         verified = fallback.verify(answers)
