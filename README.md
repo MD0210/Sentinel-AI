@@ -137,18 +137,41 @@ flowchart TD
     core --> response[Response to User]
 ```
 
-## Planned Integrations
+## Business Integration Layer
+
+The long-term architecture includes a shared **Business Integration Layer** so Sentinel Core and authorized specialist agents can use approved business systems through consistent, auditable connectors.
 
 Potential integrations include:
 
-- GitHub repository and code workflows
-- VS Code workspace inspection and controlled code changes
-- Windows terminal and filesystem operations
-- Local project and task context
-- Azure Data Engineering workflows
-- Optional hosted models and cloud infrastructure
+- **SharePoint and Microsoft 365** — search and summarize authorized documents, policies, and project materials.
+- **Azure** — inspect permitted resources, data services, pipeline runs, and monitoring information; changes to infrastructure require explicit authorization.
+- **GitHub** — inspect repositories, issues, pull requests, and code; write operations remain permission-gated.
+- **Azure DevOps** — retrieve work items, project status, and approved delivery context.
+- **Outlook and Teams** — summarize authorized messages and identify tasks or action items.
+- **VS Code, local files, and Windows tools** — assist with development workflows under local permissions.
+- **Data platforms and Power BI** — potential later integrations for approved analytics and reporting workflows.
 
-Each integration should be added with explicit permissions, tests, and appropriate approval boundaries.
+The intended pattern is a connector registry plus shared identity handling, scoped permissions, approval policies, audit records, and tenant-aware configuration. Agents should reuse approved connectors rather than each implementing their own credentials and integration logic.
+
+### Offline Intelligence Mode
+
+Sentinel is intended to remain useful when the laptop has no internet connection, provided the computer is powered on and the required local processes and models are available.
+
+In offline mode, Sentinel may:
+
+- Process queued tasks that only need local resources.
+- Search, summarize, and organize previously available local files and synchronized knowledge.
+- Use an installed local model for supported reasoning tasks.
+- Store task outcomes, user feedback, and reusable workflow information in local memory.
+- Queue cloud-dependent work for a later connectivity window.
+
+When connectivity returns, Sentinel can refresh permitted information and resume queued tasks, after rechecking permissions and whether an action is still appropriate. It cannot retrieve fresh cloud data, call hosted models, or complete online-only operations while offline. A shut-down or sleeping laptop cannot be assumed to run background jobs.
+
+### Integration and Offline Safety
+
+Each connector should expose explicit capabilities and use least-privilege credentials. Start with read-only access wherever practical; require approval for writes, deployments, external messages, destructive operations, and other consequential actions. Employer and customer systems must only be connected with authorization, and credentials and data must remain isolated by user or tenant.
+
+These integrations and offline orchestration are architectural goals; they are not all implemented yet.
 
 ## Commercialization
 
