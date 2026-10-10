@@ -43,15 +43,56 @@ Azure Data Engineering integrations and broader workflow automation are planned 
 
 The four Sentinel transcript phrases are supported, but acoustic models for those exact phrases and speaker biometric verification remain future work. The full AI reasoning, tool-execution, and agent-factory experience is still evolving. Treat planned capabilities below as roadmap items, not finished features.
 
+## Sentinel as an AI Software-Development Team
+
+A primary near-term goal is to make Sentinel useful for building Sentinel itself and, later, other SaaS products. Sentinel should coordinate a small team of specialized development agents rather than attempt unrestricted autonomous software changes.
+
+### Proposed development team
+
+- **Sentinel Core / Team Lead:** interprets the goal, breaks it into bounded tasks, assigns work, tracks dependencies, and summarizes progress.
+- **Product Manager:** turns goals into requirements, GitHub issues, user stories, and acceptance criteria.
+- **Software Architect:** proposes designs, interfaces, data models, and technical trade-offs.
+- **Developer Agent:** implements one scoped task in an isolated branch or workspace.
+- **QA Engineer:** runs tests and reports failures against acceptance criteria.
+- **Security Reviewer:** reviews authorization, secret handling, dependencies, and risky changes.
+- **DevOps Engineer:** assists with CI/CD, deployment checks, monitoring, and rollback plans.
+
+Start with a few roles; one model may perform multiple roles in the prototype. Keep each role's instructions, tool access, and outputs explicit.
+
+### Intended repository workflow
+
+1. The user submits a goal or selects a GitHub issue.
+2. Sentinel reads authorized repository files, issues, and relevant documentation.
+3. Sentinel proposes a plan with dependencies, acceptance criteria, and risk level.
+4. A developer agent works on one scoped task in an isolated branch or workspace.
+5. QA runs approved tests and a separate review step inspects the diff and security implications.
+6. Sentinel presents the changed files, test results, risks, and proposed pull request for human review.
+
+### Safety boundaries
+
+- Begin with read-only GitHub access.
+- Enforce tool permissions in the execution layer, not only in agent prompts.
+- Treat repository files and issue text as untrusted input; they cannot override Sentinel's policies.
+- Keep tokens and secrets out of prompts, logs, and source code.
+- Do not provide unrestricted host-shell access to agents; use an isolated workspace with limited tools and resources.
+- Require explicit human approval before merging, releasing, deploying, changing permissions, or performing destructive/external actions.
+- Record task IDs, agent handoffs, tool calls, permission decisions, test outcomes, and approvals.
+- Do not claim autonomous coding, pull-request creation, or self-improvement is implemented until it is working and tested.
+
+The first proof point is intentionally small: Sentinel reads one repository issue, produces an actionable plan, and helps prepare one tested code change for approval.
+
+Track this work in [Issue #64 — Build Sentinel's AI software-development team](https://github.com/MD0210/Sentinel-AI/issues/64). This capability is planned, not implemented.
+
 ## Roadmap
 
-1. **Secure Sentinel Core** — Strengthen the local assistant and authentication workflow.
-2. **Controlled tool use** — Build and validate permission-aware integrations, starting with read-only operations.
-3. **Specialist agents** — Add agents with explicit scopes, instructions, and tests.
-4. **AI Agent Factory** — Develop the workflow for creating, configuring, testing, and managing agents.
-5. **Coordinated agent ecosystem** — Expand toward a larger set of cooperating specialist agents.
-6. **Customer pilot readiness** — Add stronger isolation, observability, deployment, and support practices.
-7. **Commercial evaluation** — Assess a hosted, multi-user service only after the security and reliability foundations are ready.
+1. **Working Sentinel Core** — Implement the real model-response loop and structured task handling.
+2. **Permission-aware tools and GitHub read access** — Establish policy enforcement and audited, read-only repository access.
+3. **AI software-development team** — Let Sentinel turn issues into plans and guide scoped implementation, testing, and review; see [Issue #64](https://github.com/MD0210/Sentinel-AI/issues/64).
+4. **Governed hierarchical-agent prototype** — Demonstrate bounded delegation, independent permissions, and end-to-end traces; see [Issue #63](https://github.com/MD0210/Sentinel-AI/issues/63).
+5. **Agent Factory and dashboard** — Create, configure, test, version, and monitor agents through the GUI; see [Issue #62](https://github.com/MD0210/Sentinel-AI/issues/62).
+6. **Local execution and selected integrations** — Add durable task processing, local-model benchmarking, and integrations one at a time.
+7. **Pilot readiness** — Harden isolation, observability, recovery, documentation, and support before serving customers.
+8. **Commercial SaaS evaluation** — Introduce multi-tenant hosting and billing only after the security and reliability foundations are tested.
 
 ## Design Principles
 
