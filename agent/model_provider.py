@@ -25,7 +25,7 @@ class ProviderUnavailable(ModelProviderError):
 
 
 class ModelTimeout(ModelProviderError):
-    user_message = "the model request timed out. Try again or increase SENTINEL_MODEL_TIMEOUT."
+    user_message = "the model request timed out. Try again or increase the configured model timeout."
 
 
 class InvalidModelResponse(ModelProviderError):
@@ -116,37 +116,55 @@ class HttpChatProvider:
         return content.strip()
 
 
-def create_model_provider() -> ModelProvider:
-    """Create the configured adapter from environment variables.
+def create_model_provider(prefix: str = "SENTINEL_MODEL") -> ModelProvider:
+    """Create an adapter from environment variables.
 
-    SENTINEL_MODEL_PROVIDER: ollama (default) or openai-compatible
-    SENTINEL_MODEL_NAME: model identifier
-    SENTINEL_MODEL_BASE_URL: provider base URL
-    SENTINEL_MODEL_API_KEY: optional for local models, required for hosted use
-    SENTINEL_MODEL_TIMEOUT: request timeout in seconds
+    The default model uses SENTINEL_MODEL_PROVIDER, SENTINEL_MODEL_NAME,
+    SENTINEL_MODEL_BASE_URL, SENTINEL_MODEL_API_KEY, and SENTINEL_MODEL_TIMEOUT.
+
+    Specialist prefixes (for example SENTINEL_MODEL_CODING) use
+    <PREFIX>_PROVIDER, <PREFIX>_NAME, <PREFIX>_BASE_URL, <PREFIX>_API_KEY,
+    and <PREFIX>_TIMEOUT.
     """
-    provider = os.getenv("SENTINEL_MODEL_PROVIDER", "ollama").strip().lower()
-    model = os.getenv("SENTINEL_MODEL_NAME", "llama3.2").strip()
-    timeout_raw = os.getenv("SENTINEL_MODEL_TIMEOUT", "60").strip()
+    is_default = prefix == "SENTINEL_MODEL"
+    provider_var = f"{prefix}_PROVIDER"
+    model_var = "SENTINEL_MODEL_NAME" if is_default else f"{prefix}_NAME"
+    base_url_var = f"{prefix}_BASE_URL"
+    api_key_var = f"{prefix}_API_KEY"
+    timeout_var = f"{prefix}_TIMEOUT"
+
+    provider = os.getenv(provider_var, "ollama" if is_default else "").strip().lower()
+    model = os.getenv(model_var, "llama3.2" if is_default else "").strip()
+    timeout_raw = os.getenv(timeout_var, "60").strip()
+    if not provider:
+        raise ValueError(f"{provider_var} must be configured.")
+    if not model:
+        raise ValueError(f"{model_var} cannot be empty.")
+
     try:
         timeout = float(timeout_raw)
         if timeout <= 0:
             raise ValueError
     except ValueError as exc:
-        raise ValueError("SENTINEL_MODEL_TIMEOUT must be a positive number.") from exc
-
-    if not model:
-        raise ValueError("SENTINEL_MODEL_NAME cannot be empty.")
+        raise ValueError(f"{timeout_var} must be a positive number.") from exc
 
     if provider == "ollama":
-        endpoint = os.getenv("SENTINEL_MODEL_BASE_URL", "http://127.0.0.1:11434").strip()
+        endpoint = os.getenv(
+            base_url_var, "http://127.0.0.1:11434"
+        ).strip()
+        if not endpoint:
+            raise ValueError(f"{base_url_var} cannot be empty.")
         return HttpChatProvider(
             endpoint=endpoint, model=model, timeout=timeout, response_format="ollama"
         )
 
     if provider in {"openai-compatible", "openai_compatible"}:
-        endpoint = os.getenv("SENTINEL_MODEL_BASE_URL", "https://api.openai.com/v1").strip()
-        api_key = os.getenv("SENTINEL_MODEL_API_KEY", "").strip()
+        endpoint = os.getenv(
+            base_url_var, "https://api.openai.com/v1"
+        ).strip()
+        api_key = os.getenv(api_key_var, "").strip()
+        if not endpoint:
+            raise ValueError(f"{base_url_var} cannot be empty.")
         if not api_key:
             raise ProviderUnavailable()
         return HttpChatProvider(
@@ -158,5 +176,5 @@ def create_model_provider() -> ModelProvider:
         )
 
     raise ValueError(
-        "SENTINEL_MODEL_PROVIDER must be 'ollama' or 'openai-compatible'."
+        f"{provider_var} must be 'ollama' or 'openai-compatible'."
     )
