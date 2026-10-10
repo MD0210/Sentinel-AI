@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import re
 from collections.abc import Mapping
 
@@ -79,8 +80,8 @@ def create_model_router() -> ModelRouter:
 
     for task in ("coding", "reasoning"):
         prefix = f"SENTINEL_MODEL_{task.upper()}"
-        provider_configured = bool(__import__("os").getenv(f"{prefix}_PROVIDER", "").strip())
-        model_configured = bool(__import__("os").getenv(f"{prefix}_NAME", "").strip())
+        provider_configured = bool(os.getenv(f"{prefix}_PROVIDER", "").strip())
+        model_configured = bool(os.getenv(f"{prefix}_NAME", "").strip())
         if provider_configured != model_configured:
             raise ValueError(
                 f"Configure both {prefix}_PROVIDER and {prefix}_NAME, or neither."
