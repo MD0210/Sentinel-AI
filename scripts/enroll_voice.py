@@ -14,7 +14,7 @@ from voice.wake_call import create_microphone_source
 PROFILE_PATH = Path("config/voice_profile.json")
 SAMPLE_RATE = 16_000
 SECONDS_PER_SAMPLE = 10
-SAMPLES_REQUIRED = 10
+SAMPLES_REQUIRED = 20
 FRAME_SIZE = 1280
 
 SAMPLE_SENTENCES = (
