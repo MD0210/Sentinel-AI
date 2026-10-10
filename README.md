@@ -153,6 +153,47 @@ Potential integrations include:
 
 The intended pattern is a connector registry plus shared identity handling, scoped permissions, approval policies, audit records, and tenant-aware configuration. Agents should reuse approved connectors rather than each implementing their own credentials and integration logic.
 
+### Sentinel AI GUI: Hierarchical Agent Dashboard
+
+The planned Sentinel AI GUI will provide a visual command center for managing Sentinel Core and its ecosystem of specialist agents. The interface is a roadmap item; it is not yet implemented.
+
+#### Agent hierarchy
+
+- **Sentinel AI (Master Orchestrator):** the top-level assistant that receives user requests, coordinates work, applies policy checks, and delegates tasks.
+- **Specialist agents:** named agents with a defined role, instructions, allowed tools, autonomy level, and memory scope (for example, **Marc Thomas — CFO**).
+- **Sub-agents:** agents assigned beneath a parent agent (for example, **John Doe — Marketing Analyst**, reporting to Marc Thomas). Parent-child relationships organize delegation and reporting; they do not automatically grant inherited permissions.
+
+#### Dashboard views
+
+- **Overview:** agent availability, active and queued tasks, pending approvals, recent activity, and connector health.
+- **Agent hierarchy:** a tree or node-based view to inspect reporting relationships, create or configure agents, and open each agent's profile.
+- **Agent profile:** name, role, purpose, parent agent, model/provider settings, autonomy limits, authorized tools, memory scope, execution status, and recent runs.
+- **Integration tiles:** icon-based connector cards for services such as SharePoint, Stripe, Azure, HubSpot, and Facebook Ads. Each tile should show connection status, the operations available, and which agents are authorized to use it.
+- **Communications:** a traceable timeline of agent-to-agent messages, task delegation, handoffs, returned results, errors, and escalation to Sentinel or the user.
+- **Tasks and approvals:** task owner, status, execution location, progress, results, cancellation, and approval/rejection controls for sensitive actions.
+
+#### Example hierarchy
+
+```text
+Sentinel AI — Master Orchestrator
+├── Shared/authorized integrations: SharePoint, Stripe, Azure
+└── Marc Thomas — CFO
+    ├── Integrations authorized for Marc: SharePoint, Stripe, Azure
+    └── John Doe — Marketing Analyst
+        └── Integrations authorized for John: HubSpot, Facebook Ads
+```
+
+The example illustrates the intended hierarchy, not live connected accounts. Sentinel, Marc, and John should be able to exchange task requests and results through the orchestration layer, with each handoff recorded for auditability. A connector being available to Sentinel or a parent agent must not automatically make it available to every child agent.
+
+#### GUI design and safety principles
+
+- Make the hierarchy easy to scan, with clear parent-child links and expandable agent cards.
+- Use service icons and explicit connection/health indicators; never imply a service is connected until credentials and access have been verified.
+- Keep identity, hierarchy, and permissions separate. Enforce authorization in the execution layer, not merely in the interface or model instructions.
+- Require confirmation for sensitive writes, external messages, deployments, destructive operations, and permission changes.
+- Show whether work runs locally or on a hosted worker, and make clear when a task depends on a laptop, network, model, or approval.
+- Provide an audit trail for tool calls, agent communications, permission decisions, and task outcomes.
+
 ### Offline Intelligence Mode
 
 Sentinel is intended to remain useful when the laptop has no internet connection, provided the computer is powered on and the required local processes and models are available.
