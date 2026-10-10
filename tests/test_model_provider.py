@@ -85,6 +85,23 @@ class ModelProviderTests(unittest.TestCase):
         self.assertEqual(provider.model, "qwen2.5:3b")
         self.assertEqual(provider.timeout, 15)
 
+    def test_factory_configures_hosted_compatible_provider(self):
+        with patch.dict(os.environ, {
+            "SENTINEL_MODEL_PROVIDER": "openai-compatible",
+            "SENTINEL_MODEL_NAME": "gemini-3.8-flash",
+            "SENTINEL_MODEL_BASE_URL": "https://generativelanguage.googleapis.com/v1beta/openai",
+            "SENTINEL_MODEL_API_KEY": "test-key",
+            "SENTINEL_MODEL_TIMEOUT": "30",
+        }, clear=True):
+            provider = create_model_provider()
+        self.assertEqual(provider.model, "gemini-3.8-flash")
+        self.assertEqual(
+            provider.endpoint,
+            "https://generativelanguage.googleapis.com/v1beta/openai",
+        )
+        self.assertEqual(provider.api_key, "test-key")
+        self.assertEqual(provider.timeout, 30)
+
 
 if __name__ == "__main__":
     unittest.main()
