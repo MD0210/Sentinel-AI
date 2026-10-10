@@ -1,7 +1,12 @@
-"""Sentinel AI agent controller with security and voice-layer integration."""
+"""Sentinel AI request controller with configurable model responses."""
 
 from getpass import getpass
 
+from agent.model_provider import (
+    ModelProvider,
+    ModelProviderError,
+    create_model_provider,
+)
 from security.auth import SecurityManager
 from security.policy import AuthorizationPolicy, Role
 from security.qa_config import create_fallback_from_environment
@@ -11,17 +16,19 @@ from voice.wake_call import WakeCall
 
 
 class SentinelAgent:
-    """Coordinate authentication, wake-call activation, and requests."""
+    """Coordinate authentication, request authorization, and model responses."""
 
     def __init__(
         self,
         security: SecurityManager | None = None,
         policy: AuthorizationPolicy | None = None,
         wake_call: WakeCall | None = None,
+        model_provider: ModelProvider | None = None,
     ):
         self.security = security or SecurityManager()
         self.policy = policy or AuthorizationPolicy()
         self.wake_call = wake_call or WakeCall()
+        self.model_provider = model_provider or create_model_provider()
         self.role = Role.USER
 
     @property
@@ -78,9 +85,17 @@ class SentinelAgent:
         return self.wake_call.activate(text)
 
     def handle_request(self, request: str) -> str:
-        """Handle a normal user request after authentication."""
+        """Generate a response to a normal user request after authorization."""
         if self.security.is_locked() or not self.authenticated:
             return "Authentication required."
         if not self.policy.allowed(self.role, "request"):
             return "Request not authorized."
-        return f"I received your request: {request}"
+        if not request or not request.strip():
+            return "Please enter a request."
+        try:
+            response = self.model_provider.generate(request.strip())
+        except ModelProviderError as exc:
+            # Provider exceptions are deliberately normalized; do not expose raw
+            # HTTP bodies, credentials, or other provider internals to the user.
+            return f"Sentinel model error: {exc.user_message}"
+        return response
